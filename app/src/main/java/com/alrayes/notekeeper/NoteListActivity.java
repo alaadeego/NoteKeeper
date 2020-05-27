@@ -49,7 +49,8 @@ public class NoteListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(NoteListActivity.this , NoteActivity.class);
                  NoteInfo note = (NoteInfo)  listNotes.getItemAtPosition(position);
-                  intent.putExtra(NoteActivity.NOTE_INFO , note);
+                 // intent.putExtra(NoteActivity.NOTE_INFO , note); to learn how to use Parcelable
+                intent.putExtra(NoteActivity.NOTE_POSITION , position); // use is insted of NOTE_INFO as we have DataManger singletone
                startActivity(intent);
             }
         });

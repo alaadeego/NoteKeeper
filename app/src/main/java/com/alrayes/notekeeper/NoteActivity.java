@@ -31,6 +31,10 @@ public class NoteActivity extends AppCompatActivity {
     private EditText textNoteText;
     private int notePosition;
     private boolean isCanceling;
+    private ArrayAdapter<CourseInfo> adapterCourses;
+    private String mOriginalNoteCourseId;
+    private String mOriginalNoteTitle;
+    private String mOriginalNoteText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,16 +45,28 @@ public class NoteActivity extends AppCompatActivity {
 
         spinner = findViewById(R.id.spinner_courses);
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
-        ArrayAdapter<CourseInfo> adapterCourses = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courses);
+        adapterCourses = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courses);
         adapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapterCourses);
 
         readDisplayStateValues();
+        saveOriginalNoteValues();
+
 
         textNoteTitle = findViewById(R.id.text_note_title);
         textNoteText = findViewById(R.id.text_note_text);
         if (!mIsNewNote)
             displayNote(spinner, textNoteTitle, textNoteText);
+    }
+
+    private void saveOriginalNoteValues() {
+        if (mIsNewNote)
+            return;
+        mOriginalNoteCourseId = mNote.getCourse().getCourseId();
+        mOriginalNoteTitle = mNote.getTitle();
+        mOriginalNoteText = mNote.getText();
+
+
     }
 
     private void displayNote(Spinner spinner, EditText textNoteTitle, EditText textNoteText) {
@@ -71,11 +87,9 @@ public class NoteActivity extends AppCompatActivity {
 
         mIsNewNote = position == POSITION_NOT_SET;
 
-        if (mIsNewNote)
-        {
+        if (mIsNewNote) {
             creatNewNote();
-        }
-        else {
+        } else {
             mNote = DataManager.getInstance().getNotes().get(position);
         }
     }
@@ -83,7 +97,7 @@ public class NoteActivity extends AppCompatActivity {
     private void creatNewNote() {
         DataManager dm = DataManager.getInstance();
         notePosition = dm.createNewNote();
-        mNote  = dm.getNotes().get(notePosition);
+        mNote = dm.getNotes().get(notePosition);
     }
 
     @Override
@@ -96,18 +110,25 @@ public class NoteActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(isCanceling) {
-          //when   back without saving new node
-            if (mIsNewNote)
-            {
+        if (isCanceling) {
+            //when   back without saving new node
+            if (mIsNewNote) {
                 DataManager.getInstance().removeNote(notePosition);
+            } else {
+                storePreviousNoteValue();
             }
-        }
-        else
-        {
+        } else {
             saveNote();
 
         }
+    }
+
+    private void storePreviousNoteValue() {
+        CourseInfo course = DataManager.getInstance().getCourse(mOriginalNoteCourseId);
+        mNote.setCourse(course);
+        mNote.setTitle(mOriginalNoteTitle);
+        mNote.setText(mOriginalNoteText);
+
     }
 
     private void saveNote() {
@@ -128,8 +149,7 @@ public class NoteActivity extends AppCompatActivity {
         if (id == R.id.action_send_mail) {
             sendEmail();
             return true;
-        }
-        else if(id == R.id.action_cancel) {
+        } else if (id == R.id.action_cancel) {
 
             isCanceling = true;
             finish();

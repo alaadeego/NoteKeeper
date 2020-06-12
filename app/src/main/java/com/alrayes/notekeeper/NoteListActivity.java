@@ -1,5 +1,6 @@
 package com.alrayes.notekeeper;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -8,6 +9,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,8 +20,9 @@ import android.widget.ListView;
 import java.util.List;
 
 public class NoteListActivity extends AppCompatActivity {
+    private NoteRecyclerAdapter noteRecyclerAdapter;
 
-    private ArrayAdapter<NoteInfo> adapterNote;
+    // private ArrayAdapter<NoteInfo> adapterNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +43,7 @@ public class NoteListActivity extends AppCompatActivity {
     }
 
     private void initializeDisplayContent() {
-        final ListView listNotes = findViewById(R.id.list_note);
+  /*      final ListView listNotes = findViewById(R.id.list_note);
 
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
 
@@ -55,12 +59,23 @@ public class NoteListActivity extends AppCompatActivity {
                 intent.putExtra(NoteActivity.NOTE_POSITION , position); // use is insted of NOTE_INFO as we have DataManger singletone
                startActivity(intent);
             }
-        });
+        });*/
+
+        final RecyclerView recyclerNotes = findViewById(R.id.list_note);
+        final LinearLayoutManager notesLayoutManager = new LinearLayoutManager(this);
+        recyclerNotes.setLayoutManager(notesLayoutManager);
+
+        List<NoteInfo> notes = DataManager.getInstance().getNotes();
+        noteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);
+        recyclerNotes.setAdapter(noteRecyclerAdapter);
+
     }
+
     @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        adapterNote.notifyDataSetChanged();
+    protected void onResume() {
+        super.onResume();
+        //  adapterNote.notifyDataSetChanged();
+        noteRecyclerAdapter.notifyDataSetChanged();
     }
 
 }

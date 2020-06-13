@@ -51,7 +51,7 @@ public class NoteActivity extends AppCompatActivity {
                 ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
         mViewModel = viewModelProvider.get(NoteActivityViewModel.class);
 
-        if(  mViewModel.mIsNewlyCreated  && savedInstanceState != null) {
+        if (mViewModel.mIsNewlyCreated && savedInstanceState != null) {
             mViewModel.restoreState(savedInstanceState);
         }
         mViewModel.mIsNewlyCreated = false;
@@ -139,8 +139,7 @@ public class NoteActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if(outState != null)
-        {
+        if (outState != null) {
             mViewModel.saveState(outState);
         }
     }
@@ -159,6 +158,15 @@ public class NoteActivity extends AppCompatActivity {
         mNote.setText(textNoteText.getText().toString());
     }
 
+// used to  disable or enable next action on bar menue
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_next);
+        int lastNoteIndex = DataManager.getInstance().getNotes().size() -1;
+        item.setEnabled(notePosition <lastNoteIndex); // diable next if we reach last note
+
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -176,9 +184,23 @@ public class NoteActivity extends AppCompatActivity {
             isCanceling = true;
             finish();
 
+        } else if (id == R.id.action_next) {
+            moveNext();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void moveNext() {
+
+        saveNote();
+
+        ++notePosition;
+        mNote = DataManager.getInstance().getNotes().get(notePosition);
+        saveOriginalNoteValues();
+        displayNote(spinner, textNoteTitle, textNoteText);
+        invalidateOptionsMenu();
+
     }
 
     private void sendEmail() {

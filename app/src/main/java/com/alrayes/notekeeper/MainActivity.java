@@ -8,6 +8,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.view.View;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         noteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);
 
-        coursesLayoutManager = new GridLayoutManager(this , 2);
+        coursesLayoutManager = new GridLayoutManager(this , getResources().getInteger(R.integer.course_grid_span));
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
         courseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
@@ -146,13 +147,22 @@ public class MainActivity extends AppCompatActivity
             displayCourses();
 
         } else if (id == R.id.nav_share) {
+            handleSelection(R.string.nav_shared_message);
 
         } else if (id == R.id.nav_send) {
+           // getString(R.string.nav_send_message
+            handleSelection(R.string.nav_send_message);
+
 
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    private void handleSelection(int message_id)
+    {
+        View view = findViewById(R.id.list_items);
+        Snackbar.make(view , getString(message_id) , Snackbar.LENGTH_LONG).show();
     }
 }

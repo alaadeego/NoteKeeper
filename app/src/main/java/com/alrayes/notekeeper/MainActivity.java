@@ -1,10 +1,13 @@
 package com.alrayes.notekeeper;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import android.preference.PreferenceManager;
 import android.view.View;
 
 import com.google.android.material.navigation.NavigationView;
@@ -21,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -30,7 +34,7 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView recyclerNotes;
     private LinearLayoutManager notesLayoutManager;
     private CourseRecyclerAdapter courseRecyclerAdapter;
-    private  GridLayoutManager coursesLayoutManager;
+    private GridLayoutManager coursesLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +51,11 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
+
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -67,7 +76,7 @@ public class MainActivity extends AppCompatActivity
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         noteRecyclerAdapter = new NoteRecyclerAdapter(this, notes);
 
-        coursesLayoutManager = new GridLayoutManager(this , getResources().getInteger(R.integer.course_grid_span));
+        coursesLayoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.course_grid_span));
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
         courseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
@@ -81,6 +90,7 @@ public class MainActivity extends AppCompatActivity
         selectNavigationMenueItem(R.id.nav_courses);
 
     }
+
     private void displayNotes() {
         recyclerNotes.setLayoutManager(notesLayoutManager);
         recyclerNotes.setAdapter(noteRecyclerAdapter);
@@ -99,8 +109,24 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         noteRecyclerAdapter.notifyDataSetChanged();
+        updateNavHeader();
     }
 
+    private void updateNavHeader() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View headerview = navigationView.getHeaderView(0);
+
+        TextView textViewUserName = headerview.findViewById(R.id.text_user_name);
+        TextView textViewEmailAdress = headerview.findViewById(R.id.text_email_adress);
+
+        Context context;
+        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
+        String username = pref.getString("user_display_name", "");
+        String emailadress = pref.getString("user_email_adress", "");
+        textViewUserName.setText(username);
+        textViewEmailAdress.setText(emailadress);
+
+    }
 
     @Override
     public void onBackPressed() {
@@ -128,6 +154,8 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+
             return true;
         }
 
@@ -147,10 +175,10 @@ public class MainActivity extends AppCompatActivity
             displayCourses();
 
         } else if (id == R.id.nav_share) {
-            handleSelection(R.string.nav_shared_message);
+            handleShare();
 
         } else if (id == R.id.nav_send) {
-           // getString(R.string.nav_send_message
+            // getString(R.string.nav_send_message
             handleSelection(R.string.nav_send_message);
 
 
@@ -160,9 +188,16 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    private void handleSelection(int message_id)
-    {
+
+    private void handleShare() {
+
         View view = findViewById(R.id.list_items);
-        Snackbar.make(view , getString(message_id) , Snackbar.LENGTH_LONG).show();
+        Snackbar.make(view, "Share to - " +PreferenceManager.getDefaultSharedPreferences(this).getString("user_favorite_social", "")
+                , Snackbar.LENGTH_LONG).show();
+    }
+
+    private void handleSelection(int message_id) {
+        View view = findViewById(R.id.list_items);
+        Snackbar.make(view, getString(message_id), Snackbar.LENGTH_LONG).show();
     }
 }
